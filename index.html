@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Valentine 💘</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{box-sizing:border-box;font-family:Poppins,sans-serif}
+
+body{
+  margin:0;height:100vh;
+  background:#ffd6e0;
+  overflow:hidden;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+
+/* screens */
+.screen{
+  position:absolute;
+  width:100%;
+  max-width:400px;
+  padding:20px;
+  transition:.6s;
+  z-index:2;
+}
+.hidden{opacity:0;pointer-events:none}
+
+/* text */
+h1{color:#e6396f;font-size:36px}
+h2{color:#c9184a}
+
+/* buttons */
+.buttons{position:relative;height:180px}
+button{
+  padding:14px 26px;
+  font-size:16px;
+  border-radius:30px;
+  border:none;
+  cursor:pointer;
+  position:absolute;
+}
+.yes{
+  left:50%;top:0;
+  transform:translateX(-50%);
+  background:#ff4d6d;color:#fff;
+}
+.no{
+  left:50%;top:90px;
+  transform:translateX(-50%);
+  background:#fff;border:3px solid #ddd;
+}
+
+/* dark overlay */
+#dark{
+  position:fixed;
+  inset:0;
+  background:#000;
+  opacity:0;
+  transition:.4s;
+  z-index:5;
+  pointer-events:none;
+}
+
+/* canvas */
+#fireCanvas{
+  position:fixed;
+  inset:0;
+  z-index:6;
+  pointer-events:none;
+}
+
+/* yay card */
+.card{
+  background:#fff8;
+  padding:12px;
+  border-radius:20px;
+  margin:15px 0;
+}
+.card img{
+  width:100%;
+  border-radius:16px;
+}
+
+/* heart rain */
+.heart{
+  position:fixed;
+  top:-10px;
+  font-size:18px;
+  animation:fall linear forwards;
+  pointer-events:none;
+  z-index:7;
+}
+@keyframes fall{
+  to{transform:translateY(110vh);opacity:0}
+}
+</style>
+</head>
+
+<body>
+
+<!-- SCREEN 1 -->
+<div class="screen" id="s1">
+  <h1>❤️ Kanishka ❤️</h1>
+  <h2>Will you be my Valentine? 💖</h2>
+  <div class="buttons" id="area">
+    <button class="yes" onclick="yesClick()">Yes! 💕</button>
+    <button class="no" id="noBtn" onclick="noClick()">No</button>
+  </div>
+</div>
+
+<!-- SCREEN 2 -->
+<div class="screen hidden" id="s2">
+  <h1>❤️ Yay! 🎉 ❤️</h1>
+  <h2>I knew you'd say yes!</h2>
+  <div class="card">
+    <img src="kanishka.jpg">
+  </div>
+  <h2>You've made me the happiest! 💖</h2>
+</div>
+
+<div id="dark"></div>
+<canvas id="fireCanvas"></canvas>
+
+<script>
+/* ---------- NO BUTTON ---------- */
+const texts=[
+"Really?","You sure?","No escape!","You can't escape love 💘",
+"Try again 😎","Still no? 😂","Love always wins 💕","Not today! 😤"
+];
+let ti=0;
+function noClick(){
+  const b=document.getElementById("noBtn");
+  const a=document.getElementById("area");
+  b.innerText=texts[ti++%texts.length];
+  b.style.left=Math.random()*(a.clientWidth-b.offsetWidth)+"px";
+  b.style.top=Math.random()*(a.clientHeight-b.offsetHeight)+"px";
+}
+
+/* ---------- CANVAS FIREWORKS ---------- */
+const canvas=document.getElementById("fireCanvas");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+let particles=[];
+let fireActive=false;
+
+function burst(x,y){
+  const colors=["#ff4d6d","#ff8fab","#ffc2d1","#ffd166"];
+  for(let i=0;i<120;i++){
+    particles.push({
+      x,y,
+      vx:(Math.random()-0.5)*7,
+      vy:(Math.random()-0.5)*7,
+      life:90,
+      color:colors[Math.floor(Math.random()*colors.length)]
+    });
+  }
+}
+
+function animateFire(){
+  if(!fireActive) return;
+
+  ctx.fillStyle="rgba(0,0,0,0.08)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  particles.forEach(p=>{
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.vy+=0.02;
+    p.life--;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,2,0,Math.PI*2);
+    ctx.fillStyle=p.color;
+    ctx.fill();
+  });
+
+  particles=particles.filter(p=>p.life>0);
+  requestAnimationFrame(animateFire);
+}
+
+/* ---------- HEART RAIN ---------- */
+function startHearts(){
+  setInterval(()=>{
+    const h=document.createElement("div");
+    h.className="heart";
+    h.innerHTML="❤️";
+    h.style.left=Math.random()*100+"vw";
+    h.style.fontSize=14+Math.random()*18+"px";
+    h.style.animationDuration=3+Math.random()*3+"s";
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(),6000);
+  },220);
+}
+
+/* ---------- YES CLICK FLOW ---------- */
+function yesClick(){
+  document.getElementById("dark").style.opacity="1";
+
+  fireActive=true;
+  animateFire();
+
+  for(let i=0;i<6;i++){
+    setTimeout(()=>{
+      burst(
+        Math.random()*canvas.width,
+        Math.random()*canvas.height*0.6
+      );
+    },i*350);
+  }
+
+  // STOP after 2.5 sec
+  setTimeout(()=>{
+    fireActive=false;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    document.getElementById("dark").style.opacity="0";
+
+    document.getElementById("s1").classList.add("hidden");
+    document.getElementById("s2").classList.remove("hidden");
+    startHearts();
+  },2500);
+}
+</script>
+
+</body>
+</html>
